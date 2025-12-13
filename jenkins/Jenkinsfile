@@ -2,82 +2,146 @@ pipeline {
 
     agent any
 
+    
+
     environment {
-        SPRING_PROFILES_ACTIVE = 'prod'
-        SERVER_PORT = '8080'
-        MAVEN_OPTS = '-Xmx2048m'
+
+        DOCKER_IMAGE = 'blogapp/blog-app'  
+
+        DOCKER_TAG = "${env.BUILD_NUMBER}"
+
     }
 
-    options {
-        buildDiscarder(logRotator(numToKeepStr: '10'))
-        timeout(time: 40, unit: 'MINUTES')
-        timestamps()
-    }
+    
 
     stages {
+
         stage('Checkout') {
+
             steps {
+
                 checkout scm
+
             }
+
         }
+
+        
 
         stage('Build') {
+
             steps {
+
                 dir('backend') {
-                    sh 'mvn -ntp clean compile'
+
+                    sh 'mvn clean package -DskipTests -B'
+
                 }
+
             }
+
         }
+
+        
 
         stage('Test') {
+
             steps {
+
                 dir('backend') {
-                    sh 'mvn -ntp test'
+
+                    sh 'mvn test'
+
                 }
+
             }
+
+            post {
+
+                always {
+
+                    junit 'backend/target/surefire-reports/**/*.xml'
+
+                }
+
+            }
+
         }
+
+        
 
         stage('Package') {
+
             steps {
+
                 dir('backend') {
-                    sh 'mvn -ntp -Pprod package -DskipTests'
+
+                    sh 'mvn -ntp -Pprod clean package -DskipTests'
+
                 }
+
             }
+
         }
 
-        stage('Publish Docker') {
+        
+
+        stage('Publish Docker Image') {
+
             steps {
+
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_REGISTRY_PWD', usernameVariable: 'DOCKER_REGISTRY_USER')]) {
+
                     dir('backend') {
-                        sh 'mvn -ntp jib:build -Djib.to.tags=${BUILD_NUMBER},latest'
+
+                        sh "mvn -ntp jib:build -Djib.to.image=${DOCKER_IMAGE}:${DOCKER_TAG} -Djib.to.tags=latest,${DOCKER_TAG}"
+
                     }
+
                 }
+
             }
+
         }
+
     }
 
     
 
     post {
+
         success {
-            echo 'Build successful!'
-            emailext (
-                subject: "Pipeline Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                body: "Build succeeded. Docker image: blogapp/blog-app:${env.BUILD_NUMBER}, blogapp/blog-app:latest",
-                to: "${env.CHANGE_AUTHOR_EMAIL}"
-            )
+
+            echo ":white_check_mark: Pipeline completed successfully! Image: ${DOCKER_IMAGE}:${DOCKER_TAG}"
+
         }
+
         failure {
-            echo 'Build failed!'
-            emailext (
-                subject: "Pipeline Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                body: "Build failed. Please check the logs.",
-                to: "${env.CHANGE_AUTHOR_EMAIL}"
-            )
+
+            echo ":x: Pipeline failed!"
+
         }
+
         always {
-            junit allowEmptyResults: true, testResults: 'backend/target/test-results/**/*.xml'
+
+            // Limpiar workspace con manejo de errores
+
+            script {
+
+                try {
+
+                    cleanWs()
+
+                } catch (Exception e) {
+
+                    echo ":warning: No se pudo limpiar el workspace: ${e.message}"
+
+                }
+
+            }
+
         }
+
     }
 
 }
