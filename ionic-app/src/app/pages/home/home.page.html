@@ -1,0 +1,39 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Blogs
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Blogs</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div id="container">
+    <ion-list *ngIf="blogs.length > 0">
+      <ion-item *ngFor="let blog of blogs">
+        <ion-label>
+          <h2>{{ blog.name }}</h2>
+          <p>{{ blog.handle }}</p>
+          <p *ngIf="blog.description">{{ blog.description }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <ion-card *ngIf="blogs.length === 0 && !loading">
+      <ion-card-content>
+        <p>No hay blogs disponibles</p>
+        <p style="font-size: 0.9em; color: #999;">Asegúrate de tener conexión a internet para cargar blogs</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+

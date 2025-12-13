@@ -1,0 +1,13 @@
+{
+  "name": "blog-app-backend",
+  "version": "0.0.1-SNAPSHOT",
+  "description": "Blog Application Backend",
+  "scripts": {
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
+  },
+  "devDependencies": {
+    "cypress": "^13.6.0"
+  }
+}
+

@@ -1,0 +1,47 @@
+application {
+  config {
+    baseName blogApp
+    applicationType monolith
+    packageName com.blog.app
+    prodDatabaseType postgresql
+    devDatabaseType h2Disk
+    cacheProvider ehcache
+    buildTool maven
+    authenticationType jwt
+    clientFramework react
+    useSass true
+    enableTranslation false
+    nativeLanguage en
+  }
+  entities *
+}
+
+entity Blog {
+  name String required
+  handle String required unique
+  description TextBlob
+}
+
+entity Post {
+  title String required
+  content TextBlob required
+  date Instant required
+}
+
+entity Comment {
+  text TextBlob required
+  date Instant required
+}
+
+relationship ManyToOne {
+  Post{blog(handle)} to Blog
+  Comment{post(title)} to Post
+}
+
+paginate Post, Comment with pagination
+paginate Blog with infinite-scroll
+
+dto * with mapstruct
+
+service * with serviceClass
+
