@@ -6,8 +6,6 @@ pipeline {
 
     environment {
 
-        DOCKER_IMAGE = 'blogapp/blog-app'  
-
         DOCKER_TAG = "${env.BUILD_NUMBER}"
 
     }
@@ -122,9 +120,16 @@ pipeline {
 
                             dir('backend') {
 
+                                // Construir el nombre de la imagen usando el username de Docker Hub
+                                def dockerImageName = "${DOCKER_REGISTRY_USER}/blog-app"
+
                                 sh """
 
-                                    mvn -ntp jib:build -Djib.to.image=${DOCKER_IMAGE}:${DOCKER_TAG} -Djib.to.tags=latest,${DOCKER_TAG} -Djib.to.auth.username=\${DOCKER_REGISTRY_USER} -Djib.to.auth.password=\${DOCKER_REGISTRY_PWD}
+                                    mvn -ntp jib:build \
+                                        -Djib.to.image=${dockerImageName}:${DOCKER_TAG} \
+                                        -Djib.to.tags=latest,${DOCKER_TAG} \
+                                        -Djib.to.auth.username=${DOCKER_REGISTRY_USER} \
+                                        -Djib.to.auth.password=${DOCKER_REGISTRY_PWD}
 
                                 """
 
@@ -148,7 +153,7 @@ pipeline {
 
         success {
 
-            echo ":white_check_mark: Pipeline completed successfully! Image: ${DOCKER_IMAGE}:${DOCKER_TAG}"
+            echo ":white_check_mark: Pipeline completed successfully! Build: ${DOCKER_TAG}"
 
         }
 
