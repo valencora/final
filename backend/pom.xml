@@ -94,7 +94,39 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.4.5</version>
+                <configuration>
+                    <from>
+                        <image>eclipse-temurin:17-jre-alpine</image>
+                    </from>
+                    <to>
+                        <image>blogapp/blog-app</image>
+                        <auth>
+                            <username>${DOCKER_REGISTRY_USER}</username>
+                            <password>${DOCKER_REGISTRY_PWD}</password>
+                        </auth>
+                    </to>
+                    <container>
+                        <ports>
+                            <port>8080</port>
+                        </ports>
+                        <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+                    </container>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <spring.profiles.active>prod</spring.profiles.active>
+            </properties>
+        </profile>
+    </profiles>
 </project>
 

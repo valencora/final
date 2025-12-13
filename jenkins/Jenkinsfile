@@ -2,194 +2,82 @@ pipeline {
 
     agent any
 
-    
-
     environment {
-
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-
-        DOCKER_IMAGE = 'blogapp/blog-app'
-
-        DOCKER_TAG = "${env.BUILD_NUMBER}"
-
+        SPRING_PROFILES_ACTIVE = 'prod'
+        SERVER_PORT = '8080'
+        MAVEN_OPTS = '-Xmx2048m'
     }
 
-    
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timeout(time: 40, unit: 'MINUTES')
+        timestamps()
+    }
 
     stages {
-
         stage('Checkout') {
-
             steps {
-
-                echo 'Checking out code from repository...'
-
                 checkout scm
-
             }
-
         }
 
-        
-
-        stage('Build Backend') {
-
+        stage('Build') {
             steps {
-
-                echo 'Building backend application...'
-
-                sh 'mkdir -p ${WORKSPACE}/.m2'
-
                 dir('backend') {
-
-                    sh """
-
-                        docker run --rm -v \${WORKSPACE}/backend:/app -v \${WORKSPACE}/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 mvn clean package -DskipTests
-
-                    """
-
+                    sh 'mvn -ntp clean compile'
                 }
-
             }
-
         }
 
-        
-
-        stage('Run Unit Tests') {
-
+        stage('Test') {
             steps {
-
-                echo 'Running unit tests...'
-
                 dir('backend') {
-
-                    sh """
-
-                        docker run --rm -v \${WORKSPACE}/backend:/app -v \${WORKSPACE}/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 mvn test
-
-                    """
-
+                    sh 'mvn -ntp test'
                 }
-
             }
-
         }
 
-        
-
-        stage('Build Docker Image') {
-
+        stage('Package') {
             steps {
+                dir('backend') {
+                    sh 'mvn -ntp -Pprod package -DskipTests'
+                }
+            }
+        }
 
-                echo 'Building Docker image...'
-
-                script {
-
+        stage('Publish Docker') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_REGISTRY_PWD', usernameVariable: 'DOCKER_REGISTRY_USER')]) {
                     dir('backend') {
-
-                        def image = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}", "-f Dockerfile .")
-
-                        image.tag("${DOCKER_IMAGE}:latest")
-
+                        sh 'mvn -ntp jib:build -Djib.to.tags=${BUILD_NUMBER},latest'
                     }
-
                 }
-
             }
-
         }
-
-        
-
-        stage('Login to Docker Hub') {
-
-            steps {
-
-                echo 'Logging in to Docker Hub...'
-
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-
-            }
-
-        }
-
-        
-
-        stage('Push Docker Image') {
-
-            steps {
-
-                echo 'Pushing Docker image to Docker Hub...'
-
-                sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
-
-                sh "docker push ${DOCKER_IMAGE}:latest"
-
-            }
-
-        }
-
-        
-
-        stage('Cleanup') {
-
-            steps {
-
-                echo 'Cleaning up...'
-
-                sh "docker rmi ${DOCKER_IMAGE}:${DOCKER_TAG} || true"
-
-                sh "docker rmi ${DOCKER_IMAGE}:latest || true"
-
-            }
-
-        }
-
     }
 
     
 
     post {
-
         success {
-
-            echo 'Pipeline completed successfully!'
-
+            echo 'Build successful!'
             emailext (
-
                 subject: "Pipeline Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-
-                body: "Build succeeded. Docker image: ${DOCKER_IMAGE}:${DOCKER_TAG}",
-
+                body: "Build succeeded. Docker image: blogapp/blog-app:${env.BUILD_NUMBER}, blogapp/blog-app:latest",
                 to: "${env.CHANGE_AUTHOR_EMAIL}"
-
             )
-
         }
-
         failure {
-
-            echo 'Pipeline failed!'
-
+            echo 'Build failed!'
             emailext (
-
                 subject: "Pipeline Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-
                 body: "Build failed. Please check the logs.",
-
                 to: "${env.CHANGE_AUTHOR_EMAIL}"
-
             )
-
         }
-
         always {
-
-            cleanWs()
-
+            junit allowEmptyResults: true, testResults: 'backend/target/test-results/**/*.xml'
         }
-
     }
 
 }
