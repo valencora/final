@@ -32,15 +32,23 @@ pipeline {
 
             steps {
 
-                sh 'mkdir -p ${WORKSPACE}/.m2'
+                script {
 
-                dir('backend') {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
 
-                    sh '''
+                        sh 'mkdir -p ${WORKSPACE}/.m2'
 
-                        docker run --rm -v ${WORKSPACE}/backend:/app -v ${WORKSPACE}/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 mvn clean package -DskipTests -B
+                        dir('backend') {
 
-                    '''
+                            sh """
+
+                                docker run --rm -v \${WORKSPACE}/backend:/app -v \${WORKSPACE}/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 mvn clean package -DskipTests -B
+
+                            """
+
+                        }
+
+                    }
 
                 }
 
@@ -54,13 +62,21 @@ pipeline {
 
             steps {
 
-                dir('backend') {
+                script {
 
-                    sh '''
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
 
-                        docker run --rm -v ${WORKSPACE}/backend:/app -v ${WORKSPACE}/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 mvn test
+                        dir('backend') {
 
-                    '''
+                            sh """
+
+                                docker run --rm -v \${WORKSPACE}/backend:/app -v \${WORKSPACE}/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 mvn test
+
+                            """
+
+                        }
+
+                    }
 
                 }
 
@@ -70,7 +86,7 @@ pipeline {
 
                 always {
 
-                    junit 'backend/target/surefire-reports/**/*.xml'
+                    junit allowEmptyResults: true, testResults: 'backend/target/surefire-reports/**/*.xml'
 
                 }
 
@@ -84,13 +100,21 @@ pipeline {
 
             steps {
 
-                dir('backend') {
+                script {
 
-                    sh '''
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
 
-                        docker run --rm -v ${WORKSPACE}/backend:/app -v ${WORKSPACE}/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 mvn -ntp -Pprod clean package -DskipTests
+                        dir('backend') {
 
-                    '''
+                            sh """
+
+                                docker run --rm -v \${WORKSPACE}/backend:/app -v \${WORKSPACE}/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 mvn -ntp -Pprod clean package -DskipTests
+
+                            """
+
+                        }
+
+                    }
 
                 }
 
@@ -104,15 +128,23 @@ pipeline {
 
             steps {
 
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_REGISTRY_PWD', usernameVariable: 'DOCKER_REGISTRY_USER')]) {
+                script {
 
-                    dir('backend') {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
 
-                        sh """
+                        withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_REGISTRY_PWD', usernameVariable: 'DOCKER_REGISTRY_USER')]) {
 
-                            docker run --rm -v \${WORKSPACE}/backend:/app -v \${WORKSPACE}/.m2:/root/.m2 -w /app -e DOCKER_REGISTRY_USER=\${DOCKER_REGISTRY_USER} -e DOCKER_REGISTRY_PWD=\${DOCKER_REGISTRY_PWD} maven:3.9-eclipse-temurin-17 mvn -ntp jib:build -Djib.to.image=${DOCKER_IMAGE}:${DOCKER_TAG} -Djib.to.tags=latest,${DOCKER_TAG}
+                            dir('backend') {
 
-                        """
+                                sh """
+
+                                    docker run --rm -v \${WORKSPACE}/backend:/app -v \${WORKSPACE}/.m2:/root/.m2 -w /app -e DOCKER_REGISTRY_USER=\${DOCKER_REGISTRY_USER} -e DOCKER_REGISTRY_PWD=\${DOCKER_REGISTRY_PWD} maven:3.9-eclipse-temurin-17 mvn -ntp jib:build -Djib.to.image=${DOCKER_IMAGE}:${DOCKER_TAG} -Djib.to.tags=latest,${DOCKER_TAG}
+
+                                """
+
+                            }
+
+                        }
 
                     }
 
