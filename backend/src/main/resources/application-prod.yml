@@ -1,9 +1,9 @@
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/blogapp
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/blogapp}
     driverClassName: org.postgresql.Driver
-    username: ${DB_USER:bloguser}
-    password: ${DB_PASSWORD:blogpass}
+    username: ${SPRING_DATASOURCE_USERNAME:${DB_USER:bloguser}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:blogpass}}
   
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect

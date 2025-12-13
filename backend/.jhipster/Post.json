@@ -1,0 +1,37 @@
+{
+  "annotations": {
+    "changelogDate": "20251213193821"
+  },
+  "applications": ["blogApp"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "title",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "content",
+      "fieldType": "TextBlob",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "date",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "name": "Post",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityField": "handle",
+      "otherEntityName": "blog",
+      "relationshipName": "blog",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

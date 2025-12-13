@@ -1,0 +1,50 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (post(); as postRef) {
+      <div>
+        <h2 data-cy="postDetailsHeading"><span>Post</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span>ID</span></dt>
+          <dd>
+            <span>{{ postRef.id }}</span>
+          </dd>
+          <dt><span>Title</span></dt>
+          <dd>
+            <span>{{ postRef.title }}</span>
+          </dd>
+          <dt><span>Content</span></dt>
+          <dd>
+            <span>{{ postRef.content }}</span>
+          </dd>
+          <dt><span>Date</span></dt>
+          <dd>
+            <span>{{ postRef.date | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span>Blog</span></dt>
+          <dd>
+            @if (post()!.blog) {
+              <div>
+                <a [routerLink]="['/blog', post()!.blog?.id, 'view']">{{ postRef.blog?.handle }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/post', postRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

@@ -1,19 +1,26 @@
 package com.blog.app.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
+/**
+ * A Blog.
+ */
 @Entity
 @Table(name = "blog")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@SuppressWarnings("common-java:DuplicatedBlocks")
 public class Blog implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator")
+    @Column(name = "id")
     private Long id;
 
     @NotNull
@@ -24,14 +31,19 @@ public class Blog implements Serializable {
     @Column(name = "handle", nullable = false, unique = true)
     private String handle;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Lob
+    @Column(name = "description")
     private String description;
 
-    @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Post> posts = new HashSet<>();
+    // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
-        return id;
+        return this.id;
+    }
+
+    public Blog id(Long id) {
+        this.setId(id);
+        return this;
     }
 
     public void setId(Long id) {
@@ -39,11 +51,11 @@ public class Blog implements Serializable {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public Blog name(String name) {
-        this.name = name;
+        this.setName(name);
         return this;
     }
 
@@ -52,11 +64,11 @@ public class Blog implements Serializable {
     }
 
     public String getHandle() {
-        return handle;
+        return this.handle;
     }
 
     public Blog handle(String handle) {
-        this.handle = handle;
+        this.setHandle(handle);
         return this;
     }
 
@@ -65,11 +77,11 @@ public class Blog implements Serializable {
     }
 
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
     public Blog description(String description) {
-        this.description = description;
+        this.setDescription(description);
         return this;
     }
 
@@ -77,34 +89,33 @@ public class Blog implements Serializable {
         this.description = description;
     }
 
-    public Set<Post> getPosts() {
-        return posts;
-    }
-
-    public void setPosts(Set<Post> posts) {
-        this.posts = posts;
-    }
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Blog)) return false;
-        return id != null && id.equals(((Blog) o).id);
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Blog)) {
+            return false;
+        }
+        return getId() != null && getId().equals(((Blog) o).getId());
     }
 
     @Override
     public int hashCode() {
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
 
+    // prettier-ignore
     @Override
     public String toString() {
         return "Blog{" +
-            "id=" + id +
-            ", name='" + name + '\'' +
-            ", handle='" + handle + '\'' +
-            ", description='" + description + '\'' +
-            '}';
+            "id=" + getId() +
+            ", name='" + getName() + "'" +
+            ", handle='" + getHandle() + "'" +
+            ", description='" + getDescription() + "'" +
+            "}";
     }
 }
-

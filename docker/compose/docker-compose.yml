@@ -28,6 +28,8 @@ services:
       DB_USER: bloguser
       DB_PASSWORD: blogpass
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/blogapp
+      SPRING_DATASOURCE_USERNAME: bloguser
+      SPRING_DATASOURCE_PASSWORD: blogpass
     ports:
       - "8080:8080"
     depends_on:

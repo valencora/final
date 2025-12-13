@@ -8,8 +8,6 @@ application {
     cacheProvider ehcache
     buildTool maven
     authenticationType jwt
-    clientFramework react
-    useSass true
     enableTranslation false
     nativeLanguage en
   }
@@ -38,8 +36,8 @@ relationship ManyToOne {
   Comment{post(title)} to Post
 }
 
-paginate Post, Comment with pagination
-paginate Blog with infinite-scroll
+pagination Post, Comment with pagination
+pagination Blog with infinite-scroll
 
 dto * with mapstruct
 

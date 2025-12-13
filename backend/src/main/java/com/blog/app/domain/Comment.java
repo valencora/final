@@ -1,34 +1,51 @@
 package com.blog.app.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
+/**
+ * A Comment.
+ */
 @Entity
 @Table(name = "comment")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@SuppressWarnings("common-java:DuplicatedBlocks")
 public class Comment implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator")
+    @Column(name = "id")
     private Long id;
 
-    @NotNull
-    @Column(name = "text", columnDefinition = "TEXT", nullable = false)
+    @Lob
+    @Column(name = "text", nullable = false)
     private String text;
 
     @NotNull
     @Column(name = "date", nullable = false)
     private Instant date;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = { "blog" }, allowSetters = true)
     private Post post;
 
+    // jhipster-needle-entity-add-field - JHipster will add fields here
+
     public Long getId() {
-        return id;
+        return this.id;
+    }
+
+    public Comment id(Long id) {
+        this.setId(id);
+        return this;
     }
 
     public void setId(Long id) {
@@ -36,11 +53,11 @@ public class Comment implements Serializable {
     }
 
     public String getText() {
-        return text;
+        return this.text;
     }
 
     public Comment text(String text) {
-        this.text = text;
+        this.setText(text);
         return this;
     }
 
@@ -49,11 +66,11 @@ public class Comment implements Serializable {
     }
 
     public Instant getDate() {
-        return date;
+        return this.date;
     }
 
     public Comment date(Instant date) {
-        this.date = date;
+        this.setDate(date);
         return this;
     }
 
@@ -62,37 +79,44 @@ public class Comment implements Serializable {
     }
 
     public Post getPost() {
-        return post;
-    }
-
-    public Comment post(Post post) {
-        this.post = post;
-        return this;
+        return this.post;
     }
 
     public void setPost(Post post) {
         this.post = post;
     }
 
+    public Comment post(Post post) {
+        this.setPost(post);
+        return this;
+    }
+
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Comment)) return false;
-        return id != null && id.equals(((Comment) o).id);
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Comment)) {
+            return false;
+        }
+        return getId() != null && getId().equals(((Comment) o).getId());
     }
 
     @Override
     public int hashCode() {
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
 
+    // prettier-ignore
     @Override
     public String toString() {
         return "Comment{" +
-            "id=" + id +
-            ", text='" + text + '\'' +
-            ", date=" + date +
-            '}';
+            "id=" + getId() +
+            ", text='" + getText() + "'" +
+            ", date='" + getDate() + "'" +
+            "}";
     }
 }
-
