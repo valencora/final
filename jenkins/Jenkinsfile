@@ -32,9 +32,15 @@ pipeline {
 
             steps {
 
+                sh 'mkdir -p ${WORKSPACE}/.m2'
+
                 dir('backend') {
 
-                    sh 'mvn clean package -DskipTests -B'
+                    sh '''
+
+                        docker run --rm -v ${WORKSPACE}/backend:/app -v ${WORKSPACE}/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 mvn clean package -DskipTests -B
+
+                    '''
 
                 }
 
@@ -50,7 +56,11 @@ pipeline {
 
                 dir('backend') {
 
-                    sh 'mvn test'
+                    sh '''
+
+                        docker run --rm -v ${WORKSPACE}/backend:/app -v ${WORKSPACE}/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 mvn test
+
+                    '''
 
                 }
 
@@ -76,7 +86,11 @@ pipeline {
 
                 dir('backend') {
 
-                    sh 'mvn -ntp -Pprod clean package -DskipTests'
+                    sh '''
+
+                        docker run --rm -v ${WORKSPACE}/backend:/app -v ${WORKSPACE}/.m2:/root/.m2 -w /app maven:3.9-eclipse-temurin-17 mvn -ntp -Pprod clean package -DskipTests
+
+                    '''
 
                 }
 
@@ -94,7 +108,11 @@ pipeline {
 
                     dir('backend') {
 
-                        sh "mvn -ntp jib:build -Djib.to.image=${DOCKER_IMAGE}:${DOCKER_TAG} -Djib.to.tags=latest,${DOCKER_TAG}"
+                        sh """
+
+                            docker run --rm -v \${WORKSPACE}/backend:/app -v \${WORKSPACE}/.m2:/root/.m2 -w /app -e DOCKER_REGISTRY_USER=\${DOCKER_REGISTRY_USER} -e DOCKER_REGISTRY_PWD=\${DOCKER_REGISTRY_PWD} maven:3.9-eclipse-temurin-17 mvn -ntp jib:build -Djib.to.image=${DOCKER_IMAGE}:${DOCKER_TAG} -Djib.to.tags=latest,${DOCKER_TAG}
+
+                        """
 
                     }
 
