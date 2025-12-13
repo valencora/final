@@ -124,11 +124,7 @@ pipeline {
 
                                 sh """
 
-                                    export DOCKER_REGISTRY_USER=\${DOCKER_REGISTRY_USER}
-
-                                    export DOCKER_REGISTRY_PWD=\${DOCKER_REGISTRY_PWD}
-
-                                    mvn -ntp jib:build -Djib.to.image=${DOCKER_IMAGE}:${DOCKER_TAG} -Djib.to.tags=latest,${DOCKER_TAG}
+                                    mvn -ntp jib:build -Djib.to.image=${DOCKER_IMAGE}:${DOCKER_TAG} -Djib.to.tags=latest,${DOCKER_TAG} -Djib.to.auth.username=\${DOCKER_REGISTRY_USER} -Djib.to.auth.password=\${DOCKER_REGISTRY_PWD}
 
                                 """
 
