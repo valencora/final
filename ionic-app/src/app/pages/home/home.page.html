@@ -19,13 +19,65 @@
 
   <div id="container">
     <ion-list *ngIf="blogs.length > 0">
-      <ion-item *ngFor="let blog of blogs">
-        <ion-label>
-          <h2>{{ blog.name }}</h2>
-          <p>{{ blog.handle }}</p>
-          <p *ngIf="blog.description">{{ blog.description }}</p>
-        </ion-label>
-      </ion-item>
+      <ng-container *ngFor="let blog of blogs; let i = index">
+        <!-- Blog Item -->
+        <ion-item [button]="blog.posts && blog.posts.length > 0" (click)="blog.posts && blog.posts.length > 0 ? toggleBlog(blog) : null">
+          <ion-label>
+            <h2>{{ blog.name }}</h2>
+            <p>{{ blog.handle }}</p>
+            <p *ngIf="blog.description">{{ blog.description }}</p>
+            <p *ngIf="blog.posts && blog.posts.length > 0" style="margin-top: 8px;">
+              <ion-badge color="primary">{{ blog.posts.length }} {{ blog.posts.length === 1 ? 'post' : 'posts' }}</ion-badge>
+            </p>
+          </ion-label>
+          <ion-icon 
+            *ngIf="blog.posts && blog.posts.length > 0"
+            slot="end"
+            [name]="blog.expanded ? 'chevron-up' : 'chevron-down'"
+            color="medium">
+          </ion-icon>
+        </ion-item>
+
+        <!-- Posts del Blog (solo se muestran si el blog está expandido) -->
+        <div *ngIf="blog.expanded && blog.posts && blog.posts.length > 0">
+          <ion-item *ngFor="let post of blog.posts" 
+                    [button]="post.comments && post.comments.length > 0"
+                    (click)="post.comments && post.comments.length > 0 ? togglePost(post) : null"
+                    lines="full" 
+                    style="--padding-start: 20px;">
+            <ion-label>
+              <h3>{{ post.title }}</h3>
+              <p style="white-space: pre-wrap;">{{ post.content }}</p>
+              <p *ngIf="post.date" style="font-size: 0.8em; color: #999; margin-top: 8px;">
+                {{ formatDate(post.date) }}
+              </p>
+              <p *ngIf="post.comments && post.comments.length > 0" style="margin-top: 8px;">
+                <ion-badge color="secondary">{{ post.comments.length }} {{ post.comments.length === 1 ? 'comentario' : 'comentarios' }}</ion-badge>
+              </p>
+            </ion-label>
+            <ion-icon 
+              *ngIf="post.comments && post.comments.length > 0"
+              slot="end"
+              [name]="post.expanded ? 'chevron-up' : 'chevron-down'"
+              color="medium">
+            </ion-icon>
+          </ion-item>
+
+          <!-- Comentarios de los Posts -->
+          <div *ngFor="let post of blog.posts">
+            <ion-item *ngFor="let comment of (post.expanded && post.comments ? post.comments : [])" 
+                      lines="full" 
+                      style="--padding-start: 40px; --background: #f5f5f5;">
+              <ion-label>
+                <p style="white-space: pre-wrap;">{{ comment.text }}</p>
+                <p *ngIf="comment.date" style="font-size: 0.75em; color: #999; margin-top: 4px;">
+                  {{ formatDate(comment.date) }}
+                </p>
+              </ion-label>
+            </ion-item>
+          </div>
+        </div>
+      </ng-container>
     </ion-list>
 
     <ion-card *ngIf="blogs.length === 0 && !loading">
@@ -36,4 +88,3 @@
     </ion-card>
   </div>
 </ion-content>
-
