@@ -33,21 +33,10 @@
         "http://localhost:8080/api/blogs/**"
       ],
       "cacheConfig": {
-        "strategy": "performance",
+        "strategy": "freshness",
         "maxSize": 100,
         "maxAge": "7d",
         "timeout": "10s"
-      }
-    },
-    {
-      "name": "api-authenticate",
-      "urls": [
-        "http://localhost:8080/api/authenticate"
-      ],
-      "cacheConfig": {
-        "strategy": "performance",
-        "maxSize": 10,
-        "maxAge": "1d"
       }
     }
   ]
